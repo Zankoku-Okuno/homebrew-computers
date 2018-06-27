@@ -1,0 +1,3 @@
+[submodule "breadboard-cad"]
+	path = breadboard-cad
+	url = ssh://git@github.com/Zankoku-Okuno/breadboard-cad.git

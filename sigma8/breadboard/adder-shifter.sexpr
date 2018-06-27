@@ -1,0 +1,132 @@
+(let [
+     A 11   B 10   C  9   D  8  E 7
+     F  4   G  3   H  2   I  1  J 0
+    -T -4  +T -3  -B 14  +B 15
+]
+(let [
+    rStart 19
+    rSkip 11
+
+    mStart 1
+    xStart 49
+    aStart 18
+    rStart 10
+] [
+
+
+;;;;;;;;;;;;;;;;;;;
+;;;;;; Chips ;;;;;;
+;;;;;;;;;;;;;;;;;;;
+
+
+(forEach i [0 1] [
+    (dip { name (+ "Adder S" i) partno "74HC283" start [(+ aStart (* 8 i)) E] })
+    (dip { name (+ "Negate S" i) partno "74HC86" start [(+ 16 aStart (* 7 i)) E] })
+    (dip { name (+ "Mux" i) partno "74HC157" start [(+ mStart (* 8 i)) E] })
+    (dip { name (+ "And" i) partno "DIP-14" start [(+ xStart (* 7 i)) E] })
+])
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;; Power/Ground ;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+(forEach r [0 8 16 23]
+    (wire { route [ [(+ aStart r) J] [(+ aStart r) +T] ] color "red" })
+)
+(forEach r [7 15 22 29]
+    (wire { route [ [(+ aStart r) A] [(+ aStart r) -B] ] color "black" })
+)
+
+;;;;;;;;;;;;;;;;;;;;
+;;;;;; Opcode ;;;;;;
+;;;;;;;;;;;;;;;;;;;;
+
+(header { name "~XR1" at [(+ 15 8 4 aStart) J] color "orange" })
+(forEach i [0 1] [
+    (wire { route [ [(+ 16 1 aStart (* i 7)) I] [(+ 16 4 aStart (* i 7)) I] ] color "orange" })
+    (wire { route [ [(+ 16 1 aStart (* i 7)) A] [(+ 16 4 aStart (* i 7)) A] ] color "orange" })
+    (wire { route [ [(+ 16 1 aStart (* i 7)) G] [(+ 16 1 aStart (* i 7)) D] ] color "orange" })
+])
+(let [
+    from (+ 16 7 1 aStart)
+    to (+ 16 4 aStart)
+    around (+ J 0.4)
+    ]
+    (wire { route [ [from J] [from around] [to around] [to J] ] color "orange" })
+)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;; XR Hookups ;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;
+
+(let [
+    binary {
+        aAdd {
+            name "from XR0"
+            pins [[4 D] [2 D] [2 J] [4 J] [12 D] [10 D] [10 J] [12 J]]
+            color "#00AAFF"
+        }
+        bIn {
+            name "from XR1"
+            pins [[19 D] [16 D] [18 J] [21 J] [26 D] [23 D] [25 J] [28 J]]
+            color "#4400FF"
+        }
+        sum {
+            name "Σ"
+            pins [[3 D] [0 D] [3 J] [6 J] [11 D] [8 D] [11 J] [14 J]]
+            color "#00CC00"
+        }
+    }
+] [
+
+    (forEach g ["aAdd" "bIn" "sum"]
+        (forEach [bit loc] (. binary g "pins") (let [
+            row (. loc 0)
+            col (. loc 1)
+            ]
+            (header { name (+ (. binary g "name") "[" bit "]") at [(+ row aStart) col] color (. binary g "color") })
+        ))
+    )
+
+    ; (forEach [i bit] [2 3] (let [
+    ;     fromNeg (+ 16 3 (* i 3) aStart)
+    ;     toAdder (+ 1 (* 4 i) aStart)
+    ;     around (+ (* (+ 1 i) -0.3) G)
+    ;     ] [
+    ;     (header { name (+ "XR1[" bit "]") at [(+ 16 2 (* 3 i) aStart) J] color "#00CC00" })
+    ;     (wire { route [ [fromNeg G] [fromNeg around] [toAdder around] [toAdder G] ] color "green" })
+    ; ]))
+    ; (forEach [i bit] [6 7] (let [
+    ;     fromNeg (+ 16 7 3 (* i 3) aStart)
+    ;     toAdder (+ 8 1 (* 4 i) aStart)
+    ;     around (+ (* (+ 1 i) -0.3) H)
+    ;     ] [
+    ;     (header { name (+ "XR1[" bit "]") at [(+ 16 7 2 (* 3 i) aStart) J] color "#00CC00" })
+    ;     (wire { route [ [fromNeg H] [fromNeg around] [toAdder around] [toAdder H] ] color "green" })
+    ; ]))
+    ; (forEach [i bit] [1 0] (let [
+    ;     fromNeg (+ 16 2 (* i 3) aStart)
+    ;     toAdder (+ 1 (* 4 i) aStart)
+    ;     around (+ (* (+ 1 i) 0.3) D)
+    ;     ] [
+    ;     (header { name (+ "XR1[" bit "]") at [(+ 16 (* 3 i) aStart) D] color "#00CC00" })
+    ;     (wire { route [ [fromNeg D] [fromNeg around] [toAdder around] [toAdder D] ] color "green" })
+    ; ]))
+    ; (forEach [i bit] [5 4] (let [
+    ;     fromNeg (+ 16 7 2 (* i 3) aStart)
+    ;     toAdder (+ 8 1 (* 4 i) aStart)
+    ;     around (+ (* (+ 1 i) 0.3) C)
+    ;     ] [
+    ;     (header { name (+ "XR1[" bit "]") at [(+ 16 7 (* 3 i) aStart) D] color "#00CC00" })
+    ;     (wire { route [ [fromNeg C] [fromNeg around] [toAdder around] [toAdder C] ] color "green" })
+    ; ]))
+
+
+]) ; end XR Hookups
+
+
+
+]))
